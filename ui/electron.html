@@ -3,11 +3,28 @@
   <title>Awesome Electron-based Amazon prime cheker notifier</title>
 </head>
 <body>
-  <div>Something here</div>
-  <button onclick="notifyMe()">Notify me!</button>
+  <h1>Nintendo Switch Amazon Prime Now Stock Checker</h1><br />
+  <div>Set Zip code, and Update frequency in seconds to start checking</div>
+  <form>
+    <div>
+      <label>Zip Code</label>
+      <input type='text' id="zipCode" />
+    </div>
+    <div>
+      <label>Update Interval</label>
+      <input type="text" id="updateTime" />
+    </div>
+  <button id="startButton">Start Checking!</button>
 </body>
 <script type="text/javascript">
 var path = require('path')
+const {ipcRenderer} = require('electron')
+
+ipcRenderer.on('stock-update', (event, arg) => {
+  console.log(arg)
+  const notification = new Notification(options[1].title, options[1]);
+})
+
 var options = [
   {
     title: "Basic Notification",
@@ -20,31 +37,26 @@ var options = [
   }
 ]
 
-function notifyMe() {
-  // Let's check if the browser supports notifications
-  if (!("Notification" in window)) {
-    alert("This browser does not support desktop notification");
+function startChecking() {
+  let zipCode = document.querySelector('#zipCode').value;
+  let updateTime = document.querySelector('#updateTime').value;
+
+  console.log(zipCode + ' at ' + updateTime)
+
+  if (zipCode === '' || updateTime === '') {
+    alert('You have to fill in the fields first!');
+  }
+  else {
+    ipcRenderer.send('start-checking', {zipCode, updateTime})
   }
 
-  // Let's check whether notification permissions have already been granted
-  // else if (Notification.permission === "granted") {
-    // If it's okay let's create a notification
-    var notification = new Notification(options[1].title, options[1]);
-  // }
-
-  // Otherwise, we need to ask the user for permission
-  // else if (Notification.permission !== "denied") {
-  //   Notification.requestPermission(function (permission) {
-  //     // If the user accepts, let's create a notification
-  //     if (permission === "granted") {
-  //       var notification = new Notification("Hi there!");
-  //     }
-  //   });
-  // }
-
-  // At last, if the user has denied notifications, and you
-  // want to be respectful there is no need to bother them any more.
 }
+
+const startButtonClickListener = document.querySelector('#startButton')
+        .addEventListener('click', (evt) => {
+          evt.preventDefault();
+          startChecking();
+        })
 
 </script>
 </html>

@@ -1,15 +1,47 @@
-const {app, BrowserWindow, Menu, Tray} = require('electron')
+const {app, BrowserWindow, Menu, Tray, ipcMain} = require('electron')
 const path = require('path')
 const url = require('url')
+const switchStockChecker = require('./helpers/switchStockChecker')
 const nativeImage = require('electron').nativeImage
+const moment = require('moment')
 // set up a MacOS native style tray icon
 let trayIcon = nativeImage.createFromPath('ui/images/trayIcon.png')
 trayIcon.setTemplateImage(true)
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let win
+let win,
+    searching = false,
+    zipCode,
+    updateTime
 
+
+function pollStock() {
+
+  setInterval( () => {
+    switchStockChecker.checkStock(zipCode).then( (data) => {
+      console.log('Searching ' + zipCode + ' for Nintendo Switch')
+      console.log('\n' + moment().format() )
+      console.log(JSON.stringify(data))
+      if (data.any) {
+        // send notification to renderer
+        ipcMain.send('stock-update', data);
+        data.stockNeon && console.log('Yay! Neon is available!') && open(data.website.neon);
+        data.stockGrey && console.log('Yay! Grey is available!') && open(data.website.grey);
+      } else {
+        console.log('No Luck yet :(')
+      }
+    })
+    .catch( (err) => {
+      console.log('Oh no! Something has gone wrong! ' + JSON.stringify(err) );
+    }); //switchStock.checkStock
+
+  }, updateTime * 1000); //setInterval
+
+} //pollStock
+
+
+// Start the window!!!!
 function createWindow () {
   // Create the browser window.
   win = new BrowserWindow({width: 600, height: 400})
@@ -33,20 +65,35 @@ function createWindow () {
   })
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+// Data pump from our UI
+ipcMain.on('start-checking', (event, arg) => {
+  zipCode = arg.zipCode;
+  updateTime = arg.updateTime;
+
+  console.log(zipCode + ' @ ' + updateTime + 's')
+
+  pollStock();
+});
+
+//app.dock.setBadge('Switch Stock Checker')
+app.setName('Switch Stock Checker')
+app.dock.setIcon(path.join(__dirname, 'ui', 'images', 'Nintendo_Switch_logo_transparent.png'))
+app.setAboutPanelOptions({applicationName: 'Switch Stock'})
 app.on('ready', createWindow)
 
 app.on('ready', () => {
+  // Start All the Things
+
   tray = new Tray(trayIcon)
   const contextMenu = Menu.buildFromTemplate([
     {label: 'Item1', type: 'radio'},
     {label: 'Item2', type: 'radio'},
     {label: 'Item3', type: 'radio', checked: true},
-    {label: 'Item4', type: 'radio'}
+    {type: 'separator'},
+    {label: 'Exit', role: 'exit', click() { app.quit() }}
   ])
-  tray.setToolTip('This is my application.')
+
+  tray.setToolTip('Amazon Prime Now Switch Stock Checker')
   tray.setContextMenu(contextMenu)
 })
 

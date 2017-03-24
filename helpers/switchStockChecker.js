@@ -112,22 +112,43 @@ module.exports = {
               //DEBUG && console.log('Response Code 3: ' + resStock.statusCode);
 
               let $ = cheerio.load(bodyStock, {normalizeWhitespace: true});
-              let stockNeon = 'No Luck for Neon Blue/Red :(';
-              let stockGrey = 'No Luck for Grey :(';
+              let stockAny = false;
+              let stockNeon = false;
+              let stockGrey = false;
+              let websiteNeon = '';
+              let websiteGrey = '';
               $('p.asin__details__title')
                 .each(
                   function(i, product) {
                     // "this" in the .each is the node
                     if ( $(this).text().trim() === 'Nintendo Switch with Neon Blue and Neon Red Joy-Con' ) {
+                      stockAny = true;
                       stockNeon = 'Yay! There is the red/blue one in stock!';
+                      websiteNeon = 'https://primenow.amazon.com' + $(this).parent().parent().attr('href')
                     } else if ( $(this).text().trim() === 'Nintendo Switch with Gray Joy-Con' ) {
-                      stockGrey = 'Yay! There is the grey one in stock!';
+                      stockAny = true;
+                      stockGrey = true;
+                      websiteGrey = 'https://primenow.amazon.com' + $(this).parent().parent().attr('href')
                     }
                   }
                 ); //.each
 
               // Done
-              resolve( {stockNeon, stockGrey});
+              resolve(
+                {
+                  stock :
+                  {
+                    any: stockAny,
+                    Neon: stockNeon,
+                    Grey: stockGrey,
+                  },
+                  website :
+                  {
+                    grey: websiteGrey,
+                    neon: websiteNeon,
+                  }
+                }
+              ); //resolve
             } // callback
           ); //request.get
         }; //resolverFunction

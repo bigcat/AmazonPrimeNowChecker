@@ -1,6 +1,7 @@
 const switchStock = require('./helpers/switchStockChecker');
 const readline = require('readline');
 const moment = require('moment');
+const open = require('opn');
 
 module.exports = function() {
 
@@ -22,14 +23,17 @@ module.exports = function() {
   });
 
   const loopStockCheck = () => {
+    console.log('Checking stock! \n');
     setInterval( () => {
       switchStock.checkStock(zipcode).then( (data) => {
+        console.log('\n' + moment().format() )
+        if (data.any) {
 
-        console.log(`  ${moment().format()}
-  ${data.stockNeon}
-  ${data.stockGrey}
-  `
-        ); // console.log
+          data.stockNeon && console.log('Yay! Neon is available!') && open(data.website.neon);
+          data.stockGrey && console.log('Yay! Grey is available!') && open(data.website.grey);
+        } else {
+          console.log('No Luck yet :(')
+        }
       })
       .catch( (err) => {
         console.log('Oh no! Something has gone wrong! ' + JSON.stringify(err) );

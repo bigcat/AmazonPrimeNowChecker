@@ -1,11 +1,12 @@
 {
   "name": "amazon-prime-now-checker",
+  "productName": "Switch Stock Checker",
   "version": "0.0.1",
   "description": "This scans prime now and notifies if there is Nintendo Switch availability in your area",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "cli": "node cli.js",
+    "cli": "node index.js",
     "gui": "./node_modules/.bin/electron electron.js"
   },
   "author": "Ben Catlin",
@@ -14,6 +15,7 @@
     "cheerio": "^0.22.0",
     "electron": "^1.6.2",
     "htmlparser2": "^3.9.2",
-    "moment": "^2.18.0"
+    "moment": "^2.18.0",
+    "opn": "^4.0.2"
   }
 }
