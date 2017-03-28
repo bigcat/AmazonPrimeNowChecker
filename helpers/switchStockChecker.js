@@ -1,6 +1,5 @@
 const request = require('request');
 const jar = request.jar();
-const https = require('follow-redirects').https;
 const querystring = require('querystring');
 const cheerio = require('cheerio');
 
