@@ -4,6 +4,7 @@ const url = require('url')
 const switchStockChecker = require('./helpers/switchStockChecker')
 const nativeImage = require('electron').nativeImage
 const moment = require('moment')
+const open = require('opn')
 // set up a MacOS native style tray icon
 let trayIcon = nativeImage.createFromPath('ui/images/trayIcon.png')
 trayIcon.setTemplateImage(true)
@@ -13,21 +14,31 @@ trayIcon.setTemplateImage(true)
 let win,
     searching = false,
     zipCode,
-    updateTime
+    updateTime,
+    siteOpened = false,
+    lastFound = '',
+    webContents
 
 
 function pollStock() {
 
   setInterval( () => {
     switchStockChecker.checkStock(zipCode).then( (data) => {
-      console.log('Searching ' + zipCode + ' for Nintendo Switch')
-      console.log('\n' + moment().format() )
-      console.log(JSON.stringify(data))
-      if (data.any) {
+      console.log('Searching ' + zipCode + ' for Nintendo Switch');
+      console.log(moment().format() );
+      // console.log(JSON.stringify(data))
+      if (data.stock.any) {
         // send notification to renderer
-        ipcMain.send('stock-update', data);
-        data.stockNeon && console.log('Yay! Neon is available!') && open(data.website.neon);
-        data.stockGrey && console.log('Yay! Grey is available!') && open(data.website.grey);
+        webContents.send('stock-update', data);
+        data.stock.Neon && console.log('Yay! Neon is available!');
+        data.stock.Neon && !siteOpened && open(data.website.neon);
+        data.stock.Grey && console.log('Yay! Grey is available!');
+        data.stock.Grey && !siteOpened && open(data.website.grey);
+        siteOpened = siteOpened || data.stock.Neon || data.stock.Grey;
+        lastFound = Date.now();
+        setTimeout(() => {
+          siteOpened = false;
+        }, 30 * 60 * 1000); // 30 min reset for opening a window
       } else {
         console.log('No Luck yet :(')
       }
@@ -46,6 +57,8 @@ function createWindow () {
   // Create the browser window.
   win = new BrowserWindow({width: 600, height: 400})
 
+  webContents = win.webContents
+
   // and load the index.html of the app.
   win.loadURL(url.format({
     pathname: path.join(__dirname, 'ui', 'electron.html'),
@@ -54,7 +67,7 @@ function createWindow () {
   }))
 
   // Open the DevTools.
-  win.webContents.openDevTools()
+  //win.webContents.openDevTools()
 
   // Emitted when the window is closed.
   win.on('closed', () => {

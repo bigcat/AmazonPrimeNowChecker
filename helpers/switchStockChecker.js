@@ -117,6 +117,7 @@ module.exports = {
               let stockGrey = false;
               let websiteNeon = '';
               let websiteGrey = '';
+              let retObj;
               $('p.asin__details__title')
                 .each(
                   function(i, product) {
@@ -124,31 +125,32 @@ module.exports = {
                     if ( $(this).text().trim() === 'Nintendo Switch with Neon Blue and Neon Red Joy-Con' ) {
                       stockAny = true;
                       stockNeon = 'Yay! There is the red/blue one in stock!';
-                      websiteNeon = 'https://primenow.amazon.com' + $(this).parent().parent().attr('href')
+                      websiteNeon = 'https://primenow.amazon.com' + $(this).parent().attr('href')
                     } else if ( $(this).text().trim() === 'Nintendo Switch with Gray Joy-Con' ) {
                       stockAny = true;
                       stockGrey = true;
-                      websiteGrey = 'https://primenow.amazon.com' + $(this).parent().parent().attr('href')
+                      websiteGrey = 'https://primenow.amazon.com' + $(this).parent().attr('href')
+
                     }
                   }
                 ); //.each
 
-              // Done
-              resolve(
+              retObj = {
+                stock :
                 {
-                  stock :
-                  {
-                    any: stockAny,
-                    Neon: stockNeon,
-                    Grey: stockGrey,
-                  },
-                  website :
-                  {
-                    grey: websiteGrey,
-                    neon: websiteNeon,
-                  }
+                  any: stockAny,
+                  Neon: stockNeon,
+                  Grey: stockGrey,
+                },
+                website :
+                {
+                  grey: websiteGrey,
+                  neon: websiteNeon,
                 }
-              ); //resolve
+              };
+              console.log(retObj);
+              // Done
+              resolve(retObj); //resolve
             } // callback
           ); //request.get
         }; //resolverFunction

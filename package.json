@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "cli": "node index.js",
-    "gui": "./node_modules/.bin/electron electron.js"
+    "gui": "./node_modules/.bin/electron electron.js",
+    "gui-debug": "./node_modules/.bin/electron --debug-brk electron.js"
   },
   "author": "Ben Catlin",
   "license": "Apache-2.0",
@@ -17,5 +18,9 @@
     "htmlparser2": "^3.9.2",
     "moment": "^2.18.0",
     "opn": "^4.0.2"
+  },
+  "devDependencies": {
+    "electron-debug": "^1.1.0",
+    "electron-rebuild": "^1.5.7"
   }
 }

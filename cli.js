@@ -7,6 +7,7 @@ module.exports = function() {
 
   let zipcode = '55406';
   let refresh = '5';
+  let siteOpened = false;
 
   const rl = readline.createInterface({
     input: process.stdin,
@@ -27,12 +28,16 @@ module.exports = function() {
     setInterval( () => {
       switchStock.checkStock(zipcode).then( (data) => {
         console.log('\n' + moment().format() )
-        if (data.any) {
+        if (data.stock.any) {
 
-          data.stockNeon && console.log('Yay! Neon is available!') && open(data.website.neon);
-          data.stockGrey && console.log('Yay! Grey is available!') && open(data.website.grey);
+          data.stock.Neon && !siteOpened && open(data.website.neon) && console.log('Yay! Neon is available!');
+          data.stock.Grey && !siteOpened && open(data.website.grey) && console.log('Yay! Grey is available!');
+          siteOpened = true;
+
         } else {
-          console.log('No Luck yet :(')
+
+          console.log('No Luck yet :(');
+
         }
       })
       .catch( (err) => {

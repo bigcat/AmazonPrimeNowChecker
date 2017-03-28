@@ -1,29 +1,56 @@
 <html>
 <head>
   <title>Awesome Electron-based Amazon prime cheker notifier</title>
+  <style>
+    body {
+      padding: 0 8px;
+      font-family: Roboto, sans-serif;
+    }
+    form {
+      padding: 8px 0;
+    }
+    form > div {
+      padding: 8px;
+    }
+    form > label {
+      font-size: 9px;
+    }
+  </style>
 </head>
 <body>
   <h1>Nintendo Switch Amazon Prime Now Stock Checker</h1><br />
   <div>Set Zip code, and Update frequency in seconds to start checking</div>
   <form>
     <div>
-      <label>Zip Code</label>
+      <label>Zip Code</label><br/>
       <input type='text' id="zipCode" />
     </div>
     <div>
-      <label>Update Interval</label>
+      <label>Update Interval (s)</label><br/>
       <input type="text" id="updateTime" />
     </div>
   <button id="startButton">Start Checking!</button>
 </body>
 <script type="text/javascript">
-var path = require('path')
-const {ipcRenderer} = require('electron')
+
+const path = require('path');
+const {ipcRenderer} = require('electron');
+let notificationDebounce = false;
 
 ipcRenderer.on('stock-update', (event, arg) => {
-  console.log(arg)
-  const notification = new Notification(options[1].title, options[1]);
-})
+  console.log(arg);
+  let bodyMsg = 'Found a ';
+  let neonMsg = (arg.stock.Neon ? 'Neon Switch' : '');
+  let greyMsg = (arg.stock.Grey ? 'Grey Switch' : '');
+  bodyMsg = bodyMsg + ((arg.stock.Neon && arg.stock.Grey) ? neonMsg + ' & ' + greyMsg : (neonMsg || greyMsg) );
+  let message = options[1];
+  message.body = bodyMsg;
+  !notificationDebounce && new Notification(message.title, message);
+  notificationDebounce = true;
+  setTimeout(() => {
+    notificationDebounce = false;
+  }, 30 * 60 * 1000);  // 30 min timeout
+});
 
 var options = [
   {
@@ -31,9 +58,9 @@ var options = [
     body: "Short message part"
   },
   {
-    title: "Content-Image Notification",
+    title: "Amazon Prime Now Item Found!",
     body: "Short message plus a custom content image",
-    icon: path.join(__dirname, 'ui', 'images', 'trayIcon@2x.png')
+    icon: path.join(__dirname, 'images', 'trayIcon@2x.png')
   }
 ]
 
